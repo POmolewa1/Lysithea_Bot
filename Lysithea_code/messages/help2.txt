@@ -1,0 +1,46 @@
+`/toggle_steam_sync`
+If you have a Steam account linked, it will automatically be synced once per day at 12:00 AM.
+
+If your Steam profile is private and you aren't friends with the bot owner's Steam account, automatic syncing will be turned off.
+
+If syncing is turned off and you want to turn it back on, use this command.
+
+You can check whether auto-sync is enabled by using `/guildcard` on your own profile and pressing **Next** until you reach your Steam page. At the bottom of the Steam page, you'll see the last time your account was synced and whether auto-sync is currently enabled.
+
+━━━━━━━━━━━━━━━━━━━━
+
+🎮 **ACTIVITY & XP**
+
+Your activity is tracked automatically in the background.
+
+Playing games, spending time in voice calls, streaming, and other activities can contribute to your XP.
+
+You don't need to manually start or stop anything.
+
+I can track your games when your Discord activity is visible. If you've ever seen someone with **Playing: [game]** underneath their name, that's the information I look for.
+
+If you have Steam linked, I can also record your Steam playtime when your Steam profile is public or when you are Steam friends with the bot owner.
+
+━━━━━━━━━━━━━━━━━━━━
+
+🏆 **WEEKLY STATS & MVP**
+
+Weekly statistics keep track of things such as:
+
+• Games played
+• Game time
+• Voice activity
+• Streaming
+• Messages
+
+At the end of each week, an MVP is selected based on their activity.
+
+**MVP Points:**
+
+• 6 points / hour of streaming
+• 3 points / hour in voice calls
+• 2 points / hour of gaming
+
+XP uses a similar point system.
+
+━━━━━━━━━━━━━━━━━━━━

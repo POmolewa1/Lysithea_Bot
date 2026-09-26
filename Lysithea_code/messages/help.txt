@@ -1,0 +1,54 @@
+📖 **Lysithea Help**
+
+Here are some of the things I can do!
+
+━━━━━━━━━━━━━━━━━━━━
+
+👤 **PROFILE & ACCOUNT**
+
+`/guildcard`
+View your profile, level, XP, and games.
+You can also view another guild member's card.
+
+`/link_steam`
+Link your Steam account so I can keep track of your games.
+
+**Is it safe?**
+Yes! Your Steam ID is public information, and giving it to Lysithea does **not** give me access to your Steam account. I cannot log into your account, see your password, or make changes to your account.
+
+**How does it work?**
+
+Every Steam profile has a public Steam ID. You can find it in the URL of a Steam profile.
+
+For example:
+
+`https://steamcommunity.com/profiles/xxxxxxxxxxxxxxxxxx/`
+
+The `xxxxxxxxxxxxxxxxxx` portion is the Steam ID.
+
+Simply use:
+
+`/link_steam xxxxxxxxxxxxxxxxxx`
+
+Lysithea will then ask you to confirm that the profile is yours before linking it.
+
+**🔒 What needs to be public?**
+
+If you are **not Steam friends with the bot owner (MegaJoltz)**, your Steam profile needs to be set to public for Lysithea to retrieve your games.
+
+This is because Lysithea looks up your Steam profile and reads the game information that is publicly visible on it.
+
+If you **are** Steam friends with the bot owner (MegaJoltz), Lysithea can access the information that the bot owner can see on your profile.
+
+**🎮 What about games I don't want people to see?**
+
+Don't worry!
+
+Lysithea **cannot see games that are hidden by Steam's privacy settings**. It can only access the game information that is visible to the bot owner's Steam account.
+
+Lysithea also only checks your Steam profile **once per day at 12:00 AM**. It does not constantly monitor your Steam account.
+
+`/unlink_steam`
+Unlink your Steam account and remove your stored Steam account information.
+
+Any games Lysithea has already recorded from your activity will **remain in the server's records**, so unlinking your Steam account will not erase your existing game history.
