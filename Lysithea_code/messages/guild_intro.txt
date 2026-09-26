@@ -31,8 +31,8 @@ Now, I believe that covers the important details. Here is a quick message from m
 
 This is a little project that I've been working on for a little over a month now, and I hope you guys enjoy it. I wanted to make something cool for the guild that we could just have running in the background.
 
-All of the code is open source and available on my GitHub if anyone is curious. If you guys notice any bugs, please feel free to DM me so I can fix them.
+All of the code is open source and available on my GitHub if anyone is curious and wants to take a look (BE WARNED it is almost 5000 lines). If you guys notice any bugs, please feel free to DM me so I can fix them.
 
-(link)
+(https://github.com/POmolewa1/Lysithea_Bot/tree/main)
 
 Thank you!

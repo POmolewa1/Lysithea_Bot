@@ -6,12 +6,12 @@ from discord.ext import commands
 from discord import app_commands
 import logging
 from logging.handlers import RotatingFileHandler
-# import datetime as dt
-# from datetime import timezone
-from SteamPractice import *
-from DBpractice import *
+
+from SteamClient import *
+from Database import *
+
 import asyncio
-from igdbPractice import *
+from IGDBClient import *
 from discord.ext import tasks 
 import random
 from zoneinfo import ZoneInfo
@@ -65,7 +65,7 @@ LEVEL_THRESHOLDS = [
 ]
 
 RANK_TITLES = {
-    1 : "Recruit",
+    1 : "Cardboard",
     2 : "Luminary",
     3 : "IMPOSTER???",
     4 : "Platinum",
@@ -1424,7 +1424,7 @@ async def toggle_sync(interaction: discord.Interaction):
 @client.tree.command(name = "guildcard", description="print your guild card")
 async def guildcard(interaction: discord.Interaction, user: discord.Member):
     if user.id == client.user.id:
-        await interaction.response.send_message(f"I am part of the guild but I'm just the record keeper.")
+        await interaction.response.send_message(f"My guild card? Oh, I have one. Unfortunately, my list of achievements is far too long to fit on a single card. And who's going to keep track of everyone else's records while I'm busy admiring mine?", ephemeral=True)
         return
     await interaction.response.defer()
 
@@ -1587,12 +1587,12 @@ async def get_game_news():
 
 @tasks.loop(
     time = [
-        dt.time(hour = 7, minute = 0, tzinfo=ZoneInfo("America/Los_Angeles"))
+        dt.time(hour = 14, minute = 0, tzinfo=ZoneInfo("America/Los_Angeles"))
     ]
 )
 async def weekly_game_library_enrichment():
     
-    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 2:
+    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 5:
         logger.info("Starting library enrichment")
         print("Starting library enrichment")
         await enrich_games_database(igdbclient)
@@ -1632,7 +1632,7 @@ async def end_of_day_processes():
 
     await asyncio.to_thread(daily_cleanup)
 
-    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 5:
+    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 4:
         for guild in client.guilds:
 
             logger.info(f"Starting mvp process for guild : {guild.id}")

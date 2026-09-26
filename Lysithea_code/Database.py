@@ -4,11 +4,9 @@ from dotenv import load_dotenv
 load_dotenv()
 import logging
 
-from SteamPractice import *
+from SteamClient import *
 
-# import datetime as dt
-# from datetime import timezone
-from igdbPractice import *
+from IGDBClient import *
 from enum import Enum
 from dateutil.relativedelta import relativedelta
 import discord
@@ -21,83 +19,6 @@ class activity_errors(Enum):
     STREAM_IN_PROGRESS = 3
 
 logger = logging.getLogger(__name__)
-#conn = db.connect(host= os.getenv("DB_HOST"), dbname=os.getenv("DB_NAME"), user=os.getenv("USER"), password=os.getenv("PASSWORD"),port=os.getenv("PORT"))
-#cur = conn.cursor()
-# cur.execute("""CREATE TABLE IF NOT EXISTS person (
-#         id INT PRIMARY KEY,
-#         name VARCHAR (255),
-#         age INT,
-#         gender CHAR
-#     );
-#     """)
-
-#     cur.execute("""INSERT INTO person (id, name, age, gender)
-#     VALUES 
-#     (1, 'Steve', 43, 'M'),
-#     (2, 'Mike', 23, 'M'),
-#     (3, 'Patty', 29, 'F'),
-#     (4, 'Sue', 63, 'F'),
-#     (5, 'Lary', 52, 'M');
-#     """)
-
-#     cur.execute("""SELECT * FROM person WHERE age < 50;
-#     """)
-
-#     entries = cur.fetchall()
-
-#     for row in entries:
-#         print(row)
-
-
-#     sql = cur.mogrify("""SELECT * FROM  person WHERE starts_with(name,%s) AND age < %s;""", ("J", 50))
-
-#     cur.execute(sql)
-#     for entry in cur.fetchall():
-#         print(entry)
-
-#     cur.execute("""UPDATE person
-#     SET
-#         name = 'Piablo',
-#         age = 635,
-#         gender = 'O'
-#     WHERE id = 2;
-#     """)
-
-#     cur.execute("""SELECT * FROM person
-#     WHERE id = 2;
-#     """)
-#     for entry in cur.fetchall():
-#         print(entry)
-
-
-#     cur.execute("""ALTER TABLE person
-#     ADD COLUMN credit_score INT;
-#     """)
-
-#     cur.execute("""ALTER TABLE person
-#     DROP COLUMN credit_score
-#     """)
-
-#     cur.execute("""UPDATE person
-#     SET
-#         credit_score = 800
-#     WHERE age > 40 
-#     AND (
-#         starts_with(name, 'J')
-#         OR starts_with(name, 'S')
-#     );
-#     """)
-
-#     cur.execute("SELECT * FROM person")
-
-#     for entry in cur.fetchall():
-#         print(entry)
-
-
-
-#conn.commit()
-#cur.close()
-#conn.close()
 
 def create_connection():
     conn : db.extensions.connection
