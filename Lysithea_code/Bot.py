@@ -718,10 +718,11 @@ class Client(commands.Bot):
         print(before.display_name)
         if after.activity == None and before.activity == None:
             return
-        print(before.activity.name)
-        print(after.activity.name)
+
        # ending session is still not implemented yet
         if before.activity != None:
+            print(f"user : {before.display_name} activity name: {before.activity.name} Type: {before.activity.type}")
+            print(before)
             if before.activity.type == discord.ActivityType.playing:
                 game = before.activity.name
                 # get a dictionary of guild_id : user_level
@@ -756,6 +757,8 @@ class Client(commands.Bot):
 
         # At 12 or whenever make sure to calculate the time for all currently active games then add them to the players/guild. Then change the time to that current time. Maybe doesn't matter for weekly
         if after.activity != None:
+            print(f"{after.activity.name} Type: {after.activity.type}")
+            print(after)
             if after.activity.type == discord.ActivityType.playing:
                 game = after.activity.name
                 start_time = dt.datetime.now(timezone.utc)
