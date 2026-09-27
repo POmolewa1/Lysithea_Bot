@@ -715,7 +715,23 @@ class Client(commands.Bot):
     # When the user changes their status the activity will be updated so after activity will need to check if there is a game that is currently being tracked
     async def on_presence_update(self, before: discord.Member, after: discord.Member):
         # Might be better to add the game to the db and then enrich it for tracking purposes
-        print(before.display_name)
+        before_game = None
+        for activity in before.activities:
+            print(f"BEFORE - {activity.name} Type: {activity.type}")
+
+            if activity.type == discord.ActivityType.playing:
+                before_game = activity.name
+                break
+
+        # Find the game the user is playing after the update
+        after_game = None
+        for activity in after.activities:
+            print(f"AFTER - {activity.name} Type: {activity.type}")
+
+            if activity.type == discord.ActivityType.playing:
+                after_game = activity.name
+                break
+            
         if after.activity == None and before.activity == None:
             return
 
