@@ -631,6 +631,16 @@ def get_help_message3():
     with open("messages/help3.txt", "r", encoding="utf-8") as file:
         return file.read()
     
+def normalize_game_name(game_name):
+    duplicates = {
+        "HELLDIVERS 2" : "HELLDIVERS™ 2"
+    }
+
+    if game_name in duplicates:
+        game_name = duplicates[game_name]
+
+    return game_name
+
 class Client(commands.Bot):
     #e = Embedding("https://cdn.discordapp.com/avatars/385277889404207105/fb8b1cae3be44ba623caee0610343864.png?size=1024")
     async def on_ready(self):
@@ -717,19 +727,19 @@ class Client(commands.Bot):
         # Might be better to add the game to the db and then enrich it for tracking purposes
         before_game = None
         for activity in before.activities:
-            print(f"BEFORE - {activity.name} Type: {activity.type}")
-
             if activity.type == discord.ActivityType.playing:
+                print(f"BEFORE - {activity.name} Type: {activity.type}")
                 before_game = activity.name
+                before_game = normalize_game_name(before_game)
                 break
 
         # Find the game the user is playing after the update
         after_game = None
         for activity in after.activities:
-            print(f"AFTER - {activity.name} Type: {activity.type}")
-
             if activity.type == discord.ActivityType.playing:
+                print(f"AFTER - {activity.name} Type: {activity.type}")
                 after_game = activity.name
+                after_game = normalize_game_name(after_game)
                 break
 
         if before_game == after_game:

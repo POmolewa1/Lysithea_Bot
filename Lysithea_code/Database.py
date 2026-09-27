@@ -1551,7 +1551,8 @@ def remove_user_steam_data(dicord_id, cur: db.extensions.cursor):
     cur.execute(
         """DELETE FROM user_games
             WHERE user_id = %s 
-            AND seen_playing_in_server = false;
+            AND seen_playing_in_server = false
+            AND server_hours = 0
         """,(uid,))
     
     cur.execute(
