@@ -1815,6 +1815,9 @@ async def end_of_day_processes():
     checked_members = set()
     tasks = []
     for guild in client.guilds:
+
+        await verify_roles_for_guild_and_members(guild)
+        
         for member in guild.members:
             if member.id in checked_members or member.id == client.user.id:
                 continue
