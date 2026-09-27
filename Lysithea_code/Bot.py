@@ -362,14 +362,11 @@ class GuildCard(discord.Embed):
             name="",
             value=(
                 "```text\n"
-                f"🕰️ Account Age ---  {creation_time}\n\n" 
-                f"---------------------------------\n"
-                f"📚 Games in Library   ---  {steam_games_count}\n\n"
-                f"---------------------------------\n"
-                f"💵 Aprox. Libray value\n        ${account_cost /100}\n\n" 
-                f"---------------------------------\n"
-                f"👾 Total Game Time   ---  {total_steam_time}\n\n"
-                "```\n"
+                f"🕰️  Account Age       {creation_time}\n\n"
+                f"📚  Games in Library  {steam_games_count}\n\n"
+                f"💵  Approx. Value     ${account_cost / 100:.2f}\n\n"
+                f"👾  Total Game Time   {total_steam_time}\n\n"
+                "```"
             )
         )
 
@@ -1485,9 +1482,9 @@ async def link_steam_id(interaction : discord.Interaction, steam_id : str):
             await interaction.message.edit(content="Looks like someone is currently syncing right now. Don't worry! I'll get to you in a bit as soon as I finish up with them",embed=None,view=None)
 
         async with lock:
-            # maybe add a data base look up here to see if the user has a steam profile already
             await interaction.message.edit(content="Syncing now. This might take a minute but I'll let you know when I'm finished",embed=None,view=None)
-            await asyncio.to_thread(linking_process, user_profile, interaction)
+            #await asyncio.to_thread(linking_process, user_profile, interaction)
+            await linking_process_async(user_profile, interaction)
 
         # I could also print the steam profile card here
         # we need to implement the syncing 
@@ -1496,6 +1493,15 @@ async def link_steam_id(interaction : discord.Interaction, steam_id : str):
     finally:
         syncing_users.discard(discord_id)
 
+async def linking_process_async(user_profile, interaction):
+    logging.info(f"Getting the game library from {user_profile['player']['personaname']} asyncronously")
+    game_library = get_steam_game_library(user_profile['player']['steamid'])
+    conn,cur = create_connection()
+    try:
+        await link_steam_library_async(game_library, user_profile, interaction.user.id, cur, None, False)
+    finally:
+        close_connection(conn,cur)
+    
 
 @client.tree.command(name = "unlink_steam", description = "removes all data associated with your steam account")
 async def unlink_steam(interation : discord.Interaction):
@@ -1587,12 +1593,12 @@ async def get_game_news():
 
 @tasks.loop(
     time = [
-        dt.time(hour = 14, minute = 0, tzinfo=ZoneInfo("America/Los_Angeles"))
+        dt.time(hour = 7, minute = 0, tzinfo=ZoneInfo("America/Los_Angeles"))
     ]
 )
 async def weekly_game_library_enrichment():
     
-    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 5:
+    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 2:
         logger.info("Starting library enrichment")
         print("Starting library enrichment")
         await enrich_games_database(igdbclient)
