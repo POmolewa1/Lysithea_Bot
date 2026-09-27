@@ -375,7 +375,7 @@ class GuildCard(discord.Embed):
         self.set_footer(text= f"\n\nLast synced {last_sync}            Auto-Sync: {auto_sync_value}")
     
 
-    def game_library_card(self, game_library, start_index):
+    def game_library_card(self, game_library, start_index, max_index):
 
         # if we don't have a game library then don't make this
 
@@ -392,8 +392,8 @@ class GuildCard(discord.Embed):
             return
 
         end_index = start_index + 25
-        if end_index > len(game_library):
-            end_index = len(game_library)
+        if end_index > max_index:
+            end_index = max_index
 
         game_list = list(game_library.items())
         # print(game_list)
@@ -409,7 +409,7 @@ class GuildCard(discord.Embed):
 
             self.add_field(name=f"🎮 {game_name}", value=f"[Server Time: {server_time}]\n [Steam Time : {steam_time}]", inline=False)
 
-        self.set_footer(text= f"\n\nGames ({start_index} - {end_index}) / {len(game_library)}")
+        self.set_footer(text= f"\n\nGames ({start_index} - {end_index}) / {max_index}")
 
 
 class Embedding(discord.Embed):
@@ -1142,12 +1142,12 @@ def create_game_library_card(user, b_color):
         library_pages.append(card)
         close_connection(conn, cur)
         return library_pages
-    
+
     max_index = min(len(library), 100)
     # Embeds only allow a max of 25 items so this allows us to display games in batches of 25 per page
     while(start_index < max_index):
         card = GuildCard(user, b_color)
-        card.game_library_card(library,start_index)
+        card.game_library_card(library,start_index, max_index)
         library_pages.append(card)
         start_index += 25
 
@@ -1488,9 +1488,6 @@ async def link_steam_id(interaction : discord.Interaction, steam_id : str):
             #await asyncio.to_thread(linking_process, user_profile, interaction)
             await linking_process_async(user_profile, interaction)
 
-        # I could also print the steam profile card here
-        # we need to implement the syncing 
-        # The sync should only update the recently played if the most recent time is older than a day
         await interaction.message.edit(content=f"Alright {interaction.user.mention}, I have fully linked your Profile : {user_profile['player']['personaname']} to the guild")
     finally:
         syncing_users.discard(discord_id)
