@@ -731,55 +731,49 @@ class Client(commands.Bot):
             if activity.type == discord.ActivityType.playing:
                 after_game = activity.name
                 break
-            
-        if after.activity == None and before.activity == None:
+
+        if before_game == after_game:
             return
 
        # ending session is still not implemented yet
-        if before.activity != None:
-            print(f"user : {before.display_name} activity name: {before.activity.name} Type: {before.activity.type}")
-            print(before)
-            if before.activity.type == discord.ActivityType.playing:
-                game = before.activity.name
-                # get a dictionary of guild_id : user_level
-                member_id = before.id
-                
-                if member_id in processing_user or member_id == self.user.id:
-                    print(f"Returning {member_id} is in list")
-                    return
-                
-                try:
-                    print(f"adding {member_id} to filter")
-                    processing_user.add(member_id)
-                    snapshot, guild_table = get_level_snapshot(member_id, self.guilds)
-                    #print(f"IN : {snapshot}")
+        if before_game != None:
+            game = before_game
+            # get a dictionary of guild_id : user_level
+            member_id = before.id
+            
+            if member_id in processing_user or member_id == self.user.id:
+                print(f"Returning {member_id} is in list")
+                return
+            
+            try:
+                print(f"adding {member_id} to filter")
+                processing_user.add(member_id)
+                snapshot, guild_table = get_level_snapshot(member_id, self.guilds)
+                #print(f"IN : {snapshot}")
 
-                    await asyncio.to_thread(end_game_tracking_process, before.id, game, "PLAYING", before.guild.id)
+                await asyncio.to_thread(end_game_tracking_process, before.id, game, "PLAYING", before.guild.id)
 
-                    new_snapshot, _ = get_level_snapshot(member_id, self.guilds)
-                    #print(f"OUT : {new_snapshot}")
-                    for guild_id in new_snapshot:
-                        if new_snapshot[guild_id] != snapshot[guild_id]:
-                            print(f"User went from level {snapshot[guild_id]} to level {new_snapshot[guild_id]} in server {guild_id}")
-                            #await level_up_message(snapshot[guild_id], new_snapshot[guild_id], member_id, guild_table[guild_id])
-                            asyncio.create_task(level_up_message(snapshot[guild_id], new_snapshot[guild_id], member_id, guild_table[guild_id]))
-                    # get a new dictionary of guild_id : user_level if the levels are different from the old one send the level up message
-                    end_time = dt.datetime.now(timezone.utc)
-                    print(f"{before.display_name} has stopped playing {game} at {end_time}")
-                finally:
-                    print(f"removing {member_id} to filter")
-                    processing_user.discard(member_id)
-                #print(f"played for {(end_time - start_time).total_seconds()} seconds")
+                new_snapshot, _ = get_level_snapshot(member_id, self.guilds)
+                #print(f"OUT : {new_snapshot}")
+                for guild_id in new_snapshot:
+                    if new_snapshot[guild_id] != snapshot[guild_id]:
+                        print(f"User went from level {snapshot[guild_id]} to level {new_snapshot[guild_id]} in server {guild_id}")
+                        #await level_up_message(snapshot[guild_id], new_snapshot[guild_id], member_id, guild_table[guild_id])
+                        asyncio.create_task(level_up_message(snapshot[guild_id], new_snapshot[guild_id], member_id, guild_table[guild_id]))
+                # get a new dictionary of guild_id : user_level if the levels are different from the old one send the level up message
+                end_time = dt.datetime.now(timezone.utc)
+                print(f"{before.display_name} has stopped playing {game} at {end_time}")
+            finally:
+                print(f"removing {member_id} to filter")
+                processing_user.discard(member_id)
+            #print(f"played for {(end_time - start_time).total_seconds()} seconds")
 
         # At 12 or whenever make sure to calculate the time for all currently active games then add them to the players/guild. Then change the time to that current time. Maybe doesn't matter for weekly
-        if after.activity != None:
-            print(f"{after.activity.name} Type: {after.activity.type}")
-            print(after)
-            if after.activity.type == discord.ActivityType.playing:
-                game = after.activity.name
-                start_time = dt.datetime.now(timezone.utc)
-                await asyncio.to_thread(start_game_tracking_process, game, after, "PLAYING", after.guild.id)
-                print(f"{after.display_name} has started playing {game} at {start_time}")
+        if after_game != None:
+            game = after_game
+            start_time = dt.datetime.now(timezone.utc)
+            await asyncio.to_thread(start_game_tracking_process, game, after, "PLAYING", after.guild.id)
+            print(f"{after.display_name} has started playing {game} at {start_time}")
 
         # channel = self.get_channel(int(os.getenv("CHANNEL2_ID")))
         # if channel:
