@@ -715,6 +715,7 @@ class Client(commands.Bot):
     # When the user changes their status the activity will be updated so after activity will need to check if there is a game that is currently being tracked
     async def on_presence_update(self, before: discord.Member, after: discord.Member):
         # Might be better to add the game to the db and then enrich it for tracking purposes
+        print(before.display_name)
         if after.activity == None and before.activity == None:
             return
 
@@ -724,7 +725,9 @@ class Client(commands.Bot):
                 game = before.activity.name
                 # get a dictionary of guild_id : user_level
                 member_id = before.id
+                
                 if member_id in processing_user or member_id == self.user.id:
+                    print(f"Returning {member_id} is in list")
                     return
                 
                 try:
