@@ -718,7 +718,8 @@ class Client(commands.Bot):
         print(before.display_name)
         if after.activity == None and before.activity == None:
             return
-
+        print(before.activity.name)
+        print(after.activity.name)
        # ending session is still not implemented yet
         if before.activity != None:
             if before.activity.type == discord.ActivityType.playing:
@@ -731,6 +732,7 @@ class Client(commands.Bot):
                     return
                 
                 try:
+                    print(f"adding {member_id} to filter")
                     processing_user.add(member_id)
                     snapshot, guild_table = get_level_snapshot(member_id, self.guilds)
                     #print(f"IN : {snapshot}")
@@ -748,6 +750,7 @@ class Client(commands.Bot):
                     end_time = dt.datetime.now(timezone.utc)
                     print(f"{before.display_name} has stopped playing {game} at {end_time}")
                 finally:
+                    print(f"removing {member_id} to filter")
                     processing_user.discard(member_id)
                 #print(f"played for {(end_time - start_time).total_seconds()} seconds")
 
