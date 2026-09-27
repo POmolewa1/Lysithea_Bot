@@ -2168,7 +2168,7 @@ def update_user_message_count(member_id, guild_id, cur : db.extensions.cursor):
         return
 
     if get_total_weekly_messages(uid, guild_id, cur) < 20:
-        add_user_xp(member_id, guild_id, 1, cur)
+        add_user_xp(member_id, guild_id, 100, cur)
 
     cur.execute(
         """UPDATE guilds_users

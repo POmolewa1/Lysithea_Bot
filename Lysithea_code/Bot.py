@@ -69,8 +69,8 @@ RANK_TITLES = {
     2 : "Luminary",
     3 : "IMPOSTER???",
     4 : "Platinum",
-    5 : "Rank 5-er",
-    6 : "Rank 6-er",
+    5 : "Celestial",
+    6 : "Savathûn",
     7 : "Purple Guy",
 }
 
@@ -79,8 +79,8 @@ banner_color = {
             2 : discord.Color.from_str("#AF6600"),
             3 : discord.Color.from_str("#CF0303"),
             4 : discord.Color.from_str("#00FFFF"),
-            5 : discord.Color.from_str("#00FF08"),
-            6 : discord.Color.from_str("#3300FF"),
+            5 : discord.Color.from_str("#3300FF"),
+            6 : discord.Color.from_str("#00FF08"),
             7 : discord.Color.from_str("#CE00C0")
         }
 
@@ -362,7 +362,7 @@ class GuildCard(discord.Embed):
             name="",
             value=(
                 "```text\n"
-                f"🕰️  Account Age       {creation_time}\n\n"
+                f"🕰️  Account Age    {creation_time}\n\n"
                 f"📚  Games in Library  {steam_games_count}\n\n"
                 f"💵  Approx. Value     ${account_cost / 100:.2f}\n\n"
                 f"👾  Total Game Time   {total_steam_time}\n\n"
@@ -836,7 +836,7 @@ class Client(commands.Bot):
             return
         
         message = get_guild_intro()
-        await channel.send(message)
+        await channel.send(f"@everyone\n{message}", allowed_mentions= discord.AllowedMentions(everyone=True))
 
 
 # Bot command helpers
@@ -861,6 +861,7 @@ async def create_mvp_role(guild : discord.Guild, cur : db.extensions.cursor, con
     update_mvp_role_id(role.id, guild.id, cur)
     conn.commit()
     return role.id
+    
 
 async def verify_MVP_role(guild : discord.Guild):
     conn,cur = create_connection()
@@ -1139,9 +1140,10 @@ def create_game_library_card(user, b_color):
         card = GuildCard(user, b_color)
         card.game_library_card(library,start_index)
         library_pages.append(card)
+        close_connection(conn, cur)
         return library_pages
     
-    max_index = len(library)
+    max_index = min(len(library), 100)
     # Embeds only allow a max of 25 items so this allows us to display games in batches of 25 per page
     while(start_index < max_index):
         card = GuildCard(user, b_color)
@@ -1466,7 +1468,7 @@ async def link_steam_id(interaction : discord.Interaction, steam_id : str):
                 await interaction.followup.send(f"I found your Steam profile, but it looks like it's set to private. Your profile (specifically your game library) will need to be set to public for me to see it.")
                 return
             case 3:
-                await interaction.followup.send(f"Mmm, I just checked and it looks like you already have a Steam profile linked ({user_profile}).\n\nIf you'd like to link a different Steam profile, just use /unlink_steam_data first, then come back and use this command again!")
+                await interaction.followup.send(f"Mmm, I just checked and it looks like you already have a Steam profile linked ({user_profile}).If you'd like to link a different Steam profile, just use /unlink_steam_data first, then come back and use this command again!")
                 return
 
         await view.wait()
