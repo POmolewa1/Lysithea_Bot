@@ -1822,17 +1822,16 @@ async def end_of_day_processes():
     logger.info("Began syncing process for users' steam library")
     print("Began syncing process for users' steam library")
 
+    # check roles and member roles ar accurate
     for guild in client.guilds:
         await verify_roles_for_guild_and_members(guild)
 
     add_all_daily_users_from_server_log(USER_WAS_ACTIVE)
     print(f"USER_WAS_ACTIVE finished being updated and is now {USER_WAS_ACTIVE}")
-    
-    tasks = []
+
+    # give daily xp
     for guild in client.guilds:
         for member in guild.members:
-            if member.id == client.user.id:
-                continue
             if member.id in USER_WAS_ACTIVE:
                 print(f"Giving daily xp to member : {member.display_name}")
                 logger.info(f"Giving daily xp to member : {member.display_name}")
@@ -1845,10 +1844,19 @@ async def end_of_day_processes():
                 if user_level != new_level:
                     await level_up_message(user_level, new_level, member.id, guild)
 
+    processed_users = set()
+    tasks = []
+    for guild in client.guilds:
+        for member in guild.members:
+            if member.id == client.user.id or member.id in processed_users:
+                continue
+
             auto_sync_enabled = get_auto_sync_value(member.id)
             
             if auto_sync_enabled == True:
                 tasks.append(asyncio.create_task(syncing_process_task(member.id, client.guilds)))
+
+            processed_users.add(member.id)
             
     if tasks:
         await asyncio.gather(*tasks)
@@ -1868,6 +1876,7 @@ async def end_of_day_processes():
 
     USER_WAS_ACTIVE = []
     print("Cleared USER_WAS_ACTIVE list")
+    
 
 HOLIDAYS = {
     (1, 1): "New Year's Day",
