@@ -759,7 +759,7 @@ class Client(commands.Bot):
                 break
 
         if before_game == after_game:
-            return
+            before_game = None
 
        # ending session is still not implemented yet
         if before_game != None:
@@ -1409,7 +1409,8 @@ def get_user_rank(user_level):
 
 def get_user_level(member_id, guild_id):
     xp = get_user_xp(member_id, guild_id)
-
+    if xp is None:
+        return
     level = 0
     for milestone in LEVEL_THRESHOLDS:
         if xp >= milestone:
