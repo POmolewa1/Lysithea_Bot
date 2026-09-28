@@ -636,7 +636,6 @@ def get_help_message3():
 def normalize_game_name(game_name):
     duplicates = {
         "HELLDIVERS 2" : "HELLDIVERS™ 2",
-        "Slay the Spire II" : "Slay the Spire 2"
     }
 
     if game_name in duplicates:
@@ -892,7 +891,7 @@ def create_activity_flair():
     message = ""
 
     if len(ACTIVITY_LIST) == 0:
-        for i in range(7):
+        for i in range(10):
             ACTIVITY_LIST.append(i+1)
         random.shuffle(ACTIVITY_LIST)
         print(f"New activity list : {ACTIVITY_LIST}")
@@ -923,6 +922,15 @@ def create_activity_flair():
 
         case 7:
             message = "Being blessed by Sothis 😇"
+
+        case 8:
+            message = "Having tea with old friends 🫖"
+
+        case 9:
+            message = "⚔️ Fighting bandits ⚔️"
+
+        case 10:
+            message = "Playing : Fire Emblem 🕹️"
 
     return message
 
@@ -1475,11 +1483,14 @@ async def level_up_message(prev_level, new_level, user_id, guild : discord.Guild
     )
     added_flair = create_flare()
     message = info + added_flair +  "\n\n---"
-    await level_up_channel.send(
+    
+    level_up_message = await level_up_channel.send(
         content= message,
         embed= server, 
         view = view
     )
+    
+    view.message = level_up_message
 
 SYNC_WORKERS = 5
 syncing_process_sem = asyncio.Semaphore(SYNC_WORKERS)
