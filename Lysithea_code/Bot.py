@@ -635,7 +635,8 @@ def get_help_message3():
     
 def normalize_game_name(game_name):
     duplicates = {
-        "HELLDIVERS 2" : "HELLDIVERS™ 2"
+        "HELLDIVERS 2" : "HELLDIVERS™ 2",
+        "Slay the Spire II" : "Slay the Spire 2"
     }
 
     if game_name in duplicates:
