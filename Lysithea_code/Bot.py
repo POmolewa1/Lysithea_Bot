@@ -1750,7 +1750,7 @@ async def unlink_steam(interation : discord.Interaction):
     close_connection(conn,cur)
 
     og_message = await interation.original_response()
-    await og_message.edit(content=f"Account succesfully unlinked for {member.display_name}",ephemeral=True)
+    await og_message.edit(content=f"Account succesfully unlinked for {member.display_name}")
 
 channel_name = {
     0 : "MVP",
