@@ -20,6 +20,32 @@ class activity_errors(Enum):
 
 logger = logging.getLogger(__name__)
 
+def create_connection_with_rety():
+    for attempt in range(3):
+        try:
+            conn = db.connect(
+                host=os.getenv("DB_HOST"),
+                dbname=os.getenv("DB_NAME"),
+                user=os.getenv("USER"),
+                password=os.getenv("PASSWORD"),
+                port=os.getenv("PORT")
+            )
+
+            cur = conn.cursor()
+            return conn, cur
+
+        except db.OperationalError as e:
+            logger.warning(
+                f"Database connection failed "
+                f"(attempt {attempt + 1}/3): {e}"
+            )
+
+            if attempt < 2:
+                time.sleep(2)
+            else:
+                logger.error("Could not connect to database after 3 attempts.")
+                raise
+
 def create_connection():
     conn : db.extensions.connection
     cur : db.extensions.cursor
@@ -320,7 +346,7 @@ def get_filtered_news_gids(guild_id, cur : db.extensions.cursor):
 
 def process_member_games_into_news(member_id_list, guild_id):
     today = dt.datetime.now(timezone.utc)
-    conn,cur = create_connection()
+    conn,cur = create_connection_with_rety()
     try:
         logger.info(f"Started processing game news for members : {member_id_list}")
         # for each person in the list get all the games that they played that month
@@ -530,7 +556,7 @@ def restart_tracked_activities():
     logger.info("Began retarting tracked activities....")
     print("Began retarting tracked activities....")
 
-    conn, cur = create_connection()
+    conn, cur = create_connection_with_rety()
     try:
         cur.execute(
             """SELECT * FROM activity_tracker
@@ -2282,7 +2308,9 @@ def game_batch_sync(batch):
 
 
 async def enrich_games_database(IGDBclient):
-    conn, cur = create_connection()
+    #conn, cur = create_connection()
+    conn,cur = await asyncio.to_thread(create_connection_with_rety)
+
     try:
         steam_games = get_all_user_games(on_steam = True, cur = cur)
         non_steam_games = get_all_user_games(on_steam = False, cur = cur)
