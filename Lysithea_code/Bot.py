@@ -1265,21 +1265,30 @@ def create_steam_card(user, b_color):
     return steam_card
 
 
-def create_response(url, user_list):
+def create_response(url, user_list, mentioned_users):
     variant = random.randint(1,3)
     members = ""
 
     count = 0
     for user in user_list:
         member = client.get_user(user)
+        if member is None:
+            continue
+
+        if member.id not in mentioned_users:
+            mentioned_users.add(member.id)
+            user_name = member.mention
+        else:
+            user_name = member.display_name
+        
         if len(user_list) > 2 and count != (len(user_list) - 1):
-            members += f"{member.mention}, "
+            members += f"{user_name}, "
             count += 1
         elif len(user_list) >= 2 and count == (len(user_list) - 1):
-            members += f"and {member.mention}"
+            members += f"and {user_name}"
             count += 1
         else:
-            members += f"{member.mention} "
+            members += f"{user_name} "
             count += 1
     
     if len(user_list) > 1:
@@ -1729,14 +1738,19 @@ async def unlink_steam(interation : discord.Interaction):
     member = guild.get_member(discord_id)
 
     #conn,cur = create_connection()
-    conn,cur = asyncio.to_thread(create_connection_with_rety)
+    conn,cur = await asyncio.to_thread(create_connection_with_rety)
     steam_name = get_steam_name(discord_id, cur)
-    await interation.response.send_message(f"Deleting account tied to {steam_name}")
+    if steam_name is None:
+        close_connection(conn,cur)
+        await interation.response.send_message(f"It looks like you don't have a linked steam account.", ephemeral=True)
+        return
+
+    await interation.response.send_message(f"Deleting account tied to {steam_name}", ephemeral=True)
     remove_user_steam_data(discord_id, cur)
     close_connection(conn,cur)
 
     og_message = await interation.original_response()
-    await og_message.edit(content=f"Account succesfully unlinked for {member.display_name}")
+    await og_message.edit(content=f"Account succesfully unlinked for {member.display_name}",ephemeral=True)
 
 channel_name = {
     0 : "MVP",
@@ -1801,10 +1815,11 @@ async def get_game_news():
             logger.error(f"Could not find a channel in guild : {guild.id}")
             continue
 
+        mentioned_users = set()
         for game_id, game_data in news_dictionary.items():
             if len(game_data['news_articles']) != 0:
                 for article_url in game_data['news_articles']:
-                    message = create_response(article_url, game_data['relavent_members'])
+                    message = create_response(article_url, game_data['relavent_members'], mentioned_users)
                     await channel.send(message)
     logger.info("news search finished")
     print("news search finished")
@@ -1936,7 +1951,7 @@ async def holiday_message():
 
     for guild in client.guilds:
         conn,cur = await asyncio.to_thread(create_connection_with_rety)
-        channel = get_channel(1, guild, cur)
+        channel = get_channel(3, guild, cur)
         close_connection(conn, cur)
         if channel is None:
             continue
@@ -2079,7 +2094,6 @@ def create_holiday_message(holiday=None):
                             "I've seen what real magic can do, after all. ...What? It's not bragging if it's true. 😤"
                         )
     return message
-
 
 
 client.run(os.getenv("DISCORD_TOKEN"), log_handler=handler, log_level=logging.DEBUG)

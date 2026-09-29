@@ -70,6 +70,7 @@ def initialize_db():
         weekly_stats_channel_id BIGINT,
         news_channel_id BIGINT,
         level_up_channel_id BIGINT,
+        general_channel_id BIGINT,
         mvp_role_id BIGINT,
         r1 BIGINT,
         r2 BIGINT,
@@ -902,7 +903,8 @@ def verify_members_and_channels_in_database(total_guilds, bot_profile_id, cur : 
 db_channel_collumn = {
     0 : "weekly_stats_channel_id",
     1 : "news_channel_id",
-    2 : "level_up_channel_id"
+    2 : "level_up_channel_id",
+    3 : "general_channel_id"
 }
 
 
@@ -943,7 +945,7 @@ def verify_guild_channels(guild : discord.Guild, cur : db.extensions.cursor):
         logger.error(f"Could not find ANY active channels for guild : {guild.id}")
         return
     cur.execute(
-        """SELECT weekly_stats_channel_id, news_channel_id, level_up_channel_id FROM guilds
+        """SELECT weekly_stats_channel_id, news_channel_id, level_up_channel_id, general_channel_id FROM guilds
             WHERE guild_id = %s
         """,(guild.id,)
     )
@@ -983,7 +985,7 @@ def verify_guild_channels(guild : discord.Guild, cur : db.extensions.cursor):
     if default_channel_id is None:
         return "error"
     
-    for i in range(3):
+    for i in range(4):
         if results[i] is None:
             logger.info(f"Setting default channel {db_channel_collumn[i]} for guild : {guild.id} to channel : {default_channel_id}({channel_name})")
             cur.execute(
@@ -1084,13 +1086,17 @@ def get_discord_username(discord_id, cur : db.extensions.cursor):
 
 def get_steam_name(member_id, cur : db.extensions.cursor):
     uid = get_user_id(member_id,cur)
-
+    if uid is None:
+        return
+    
     cur.execute(
         """SELECT account_name FROM general_steam_data
             WHERE user_id = %s;
         """,(uid,))
 
     result = cur.fetchone()
+    if result is None:
+        return
     return result[0]
 
 def get_game_id(app_id, cur : db.extensions.cursor):
