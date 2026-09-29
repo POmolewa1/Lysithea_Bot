@@ -773,13 +773,13 @@ class Client(commands.Bot):
             try:
                 print(f"adding {member_id} to filter")
                 processing_user.add(member_id)
-                snapshot, guild_table = asyncio.to_thread(get_level_snapshot, member_id, self.guilds)
+                snapshot, guild_table = await asyncio.to_thread(get_level_snapshot, member_id, self.guilds)
                 
                 #print(f"IN : {snapshot}")
 
                 await asyncio.to_thread(end_game_tracking_process, before.id, game, "PLAYING", before.guild.id)
 
-                new_snapshot, _ = asyncio.to_thread(get_level_snapshot, member_id, self.guilds)
+                new_snapshot, _ = await asyncio.to_thread(get_level_snapshot, member_id, self.guilds)
                 #print(f"OUT : {new_snapshot}")
                 for guild_id in new_snapshot:
                     if new_snapshot[guild_id] != snapshot[guild_id]:
