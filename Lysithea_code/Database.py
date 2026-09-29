@@ -39,7 +39,7 @@ def create_connection_with_rety():
                 f"Database connection failed "
                 f"(attempt {attempt + 1}/3): {e}"
             )
-
+            print(f"Database was asleep on {attempt + 1}/3")
             if attempt < 2:
                 time.sleep(2)
             else:
