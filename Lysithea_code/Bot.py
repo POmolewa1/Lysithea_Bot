@@ -1853,21 +1853,6 @@ async def end_of_day_processes():
     add_all_daily_users_from_server_log(USER_WAS_ACTIVE)
     print(f"USER_WAS_ACTIVE finished being updated and is now {USER_WAS_ACTIVE}")
 
-    # give daily xp
-    for guild in client.guilds:
-        for member in guild.members:
-            if member.id in USER_WAS_ACTIVE:
-                print(f"Giving daily xp to member : {member.display_name}")
-                logger.info(f"Giving daily xp to member : {member.display_name}")
-                user_level = get_user_level(member.id, guild.id)
-                conn,cur = create_connection()
-                add_user_xp(member.id, guild.id, 1000, cur)
-                close_connection(conn, cur)
-                new_level = get_user_level(member.id, guild.id)
-                
-                if user_level != new_level:
-                    await level_up_message(user_level, new_level, member.id, guild)
-
     processed_users = set()
     tasks = []
     for guild in client.guilds:
@@ -1897,6 +1882,21 @@ async def end_of_day_processes():
             await mvp_process(guild)
 
         await asyncio.to_thread(weekly_cleanup)
+
+    # give daily xp
+    for guild in client.guilds:
+        for member in guild.members:
+            if member.id in USER_WAS_ACTIVE:
+                print(f"Giving daily xp to member : {member.display_name}")
+                logger.info(f"Giving daily xp to member : {member.display_name}")
+                user_level = get_user_level(member.id, guild.id)
+                conn,cur = create_connection()
+                add_user_xp(member.id, guild.id, 1000, cur)
+                close_connection(conn, cur)
+                new_level = get_user_level(member.id, guild.id)
+                
+                if user_level != new_level:
+                    await level_up_message(user_level, new_level, member.id, guild)
 
     USER_WAS_ACTIVE = []
     print("Cleared USER_WAS_ACTIVE list")
