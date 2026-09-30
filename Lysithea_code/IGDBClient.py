@@ -5,8 +5,26 @@ load_dotenv()
 import logging
 import datetime as dt
 from datetime import timezone
+import re
+import unicodedata
+from difflib import SequenceMatcher
 
 logger = logging.getLogger(__name__)
+
+def normalize_game_name(name):
+    name = unicodedata.normalize("NFKD", name)
+    name = name.lower()
+
+    # Remove trademark/copyright/registered symbols
+    name = name.replace("™", "")
+    name = name.replace("®", "")
+    name = name.replace("©", "")
+
+    # Normalize whitespace
+    name = re.sub(r"\s+", " ", name).strip()
+
+    return name
+
 
 class IGDBClient():
 
@@ -40,7 +58,7 @@ class IGDBClient():
             "Authorization" : f"Bearer {self.access_token}"
         }
         url = "https://api.igdb.com/v4/games"
-        data = f'''search "{game_name}"; fields name, cover.url; limit 1;'''
+        data = f'''search "{game_name}"; fields name, cover.url;'''
 
         request = requests.post(url = url, headers = header, data = data)
 
@@ -57,10 +75,44 @@ class IGDBClient():
         if len(result) == 0:
             logger.info("Could not find any results")
             return None
-        if not result or 'cover' not in result[0]:
-            logger.info("Could not find a cover image")
+        
+        best_match = None
+        best_similarity = 0
+
+        normalized_name = normalize_game_name(game_name)
+
+        for game in result:
+            if 'cover' not in game or game['cover']['url'] is None:
+                continue
+
+            igdb_name = normalize_game_name(game['name'])
+
+            similarity = SequenceMatcher(
+                None,
+                normalized_name,
+                igdb_name
+            ).ratio()
+
+            if similarity > best_similarity:
+                best_similarity = similarity
+                best_match = game
+
+        if best_match is None:
             return None
         
-        img = result[0]['cover']['url']
+        print(
+                f"From IGDB Client:\n"
+                f"Best match: {game_name} -> {best_match['name']} "
+                f"({best_similarity:.2%})\n"
+                f"url : http:{best_match['cover']['url']}"
+            )
+        logger.info(
+                f"From IGDB Client:\n"
+                f"Best match: {game_name} -> {best_match['name']} "
+                f"({best_similarity:.2%})\n"
+                f"url : http:{best_match['cover']['url']}"
+            )
+
+        img = best_match['cover']['url']
 
         return f"http:{img}"
