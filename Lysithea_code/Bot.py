@@ -733,8 +733,8 @@ class Client(commands.Bot):
             await level_up_message(level, new_level, message.author.id, message.guild)
 
         # For testing
-        if message.content.startswith("m"):
-            await mvp_process(message.guild)
+        # if message.content.startswith("m"):
+        #     await mvp_process(message.guild)
 
         # if message.content.startswith("h"):
         #     channel = self.get_channel(1552002381439443114)
@@ -888,7 +888,7 @@ class Client(commands.Bot):
             level = get_user_level(member.id, member.guild.id)
             end_tracker(member.id, None, a_state2, guild_id, cur)
             close_connection(conn,cur)
-            
+
             new_level = get_user_level(member.id, member.guild.id)
             if level != new_level:
                 await level_up_message(level, new_level, member.id, member.guild)
@@ -1638,6 +1638,62 @@ async def verify_user_role(member : discord.Member, guild : discord.Guild):
         await member.add_roles(correct_role_for_rank)
 
 
+async def restart_activities(guilds):
+    logger.info("Began restarting tracked activities....")
+    print("Began restarting tracked activities....")
+
+    conn, cur = await asyncio.to_thread(create_connection_with_rety)
+    try:
+        cur.execute(
+            """SELECT * FROM activity_tracker
+            """
+        )
+
+        results = cur.fetchall()
+
+        if not results:
+            logger.info("No activities are currently being tracked. Ending replacement process")
+            return
+        
+        time_buffer = dt.timedelta(minutes=3)
+
+        for result in results:
+            user_id = result[1]
+            game_id = result[2]
+            activity_type = result[3]
+            guild_id = result[5]
+
+            member_id = get_member_id(user_id, cur)
+
+            if activity_type == "PLAYING":
+                snapshot, guild_table = await asyncio.to_thread(get_level_snapshot,member_id, guilds)
+                
+                game_name = get_game_name_from_id(game_id, cur)
+                end_game_tracker(member_id, game_name, activity_type, guild_id, cur)
+                start_activity_tracker(member_id, game_name, activity_type, guild_id, cur, time_buffer)
+                conn.commit()
+                
+                new_snapshot, _ = await asyncio.to_thread(get_level_snapshot,member_id, guilds)
+                for guild_id in new_snapshot:
+                    if new_snapshot[guild_id] != snapshot[guild_id]:
+                        print(f"User went from level {snapshot[guild_id]} to level {new_snapshot[guild_id]} in server {guild_id}")
+                        asyncio.create_task(level_up_message(snapshot[guild_id], new_snapshot[guild_id], member_id, guild_table[guild_id]))
+            else:
+                old_level = get_user_level(member_id, guild_id)
+
+                end_voice_tracker(member_id, activity_type, guild_id, cur)
+                start_activity_tracker(member_id, None, activity_type, guild_id, cur, time_buffer)
+                conn.commit()
+                
+                new_level = get_user_level(member_id, guild_id)
+                
+                if old_level != new_level:
+                    asyncio.create_task(level_up_message(old_level, new_level, member_id, client.get_guild(guild_id)))
+
+    finally:
+        close_connection(conn, cur)
+
+
 # Bot /commands
 #---------------------
 
@@ -1889,7 +1945,8 @@ async def end_of_day_processes():
         )
     )
 
-    await asyncio.to_thread(restart_tracked_activities)
+    await restart_activities(client.guilds)
+
     logger.info("Resting for 2 minutes")
     print("Resting for 2 minutes")
     await asyncio.sleep(120)

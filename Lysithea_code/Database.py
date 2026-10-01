@@ -561,44 +561,6 @@ def get_member_id(uid , cur : db.extensions.cursor):
 
     return result[0]
 
-
-def restart_tracked_activities():
-    logger.info("Began retarting tracked activities....")
-    print("Began retarting tracked activities....")
-
-    conn, cur = create_connection_with_rety()
-    try:
-        cur.execute(
-            """SELECT * FROM activity_tracker
-            """
-        )
-
-        results = cur.fetchall()
-
-        if not results:
-            logger.info("No activities are currently being tracked. Ending replacement process")
-            return
-        
-        time_buffer = dt.timedelta(minutes=3)
-
-        for result in results:
-            user_id = result[1]
-            game_id = result[2]
-            activity_type = result[3]
-            guild_id = result[5]
-
-            member_id = get_member_id(user_id, cur)
-
-            if activity_type == "PLAYING":
-                game_name = get_game_name_from_id(game_id, cur)
-                end_game_tracker(member_id, game_name, activity_type, guild_id, cur)
-                start_activity_tracker(member_id, game_name, activity_type, guild_id, cur, time_buffer)
-            else:
-                end_voice_tracker(member_id, activity_type, guild_id, cur)
-                start_activity_tracker(member_id, None, activity_type, guild_id, cur, time_buffer)
-
-    finally:
-        close_connection(conn, cur)
     
 def add_to_server_log_for_syncing_process(uid, gid, activity_type, activity_time, start_time, cur : db.extensions.cursor):
     #guild_list = get_user_guilds(uid, cur)
