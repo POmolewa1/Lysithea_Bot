@@ -2388,11 +2388,20 @@ async def enrich_games_database(IGDBclient):
     print("Enrichment process completed")
     logger.info("Enrichment process completed")
 
-
+# Non steam games will only be enriched if they don't have an image
 def enrich_games_not_from_steam(non_steam_games, IGDBclient):
     conn, cur = create_connection()
     try:
         for game_name in non_steam_games:
+            gid = get_game_id_from_name(game_name, cur)
+            if gid is None:
+                logger.error(f"Could not find gid for game {game_name}")
+                continue
+            image = get_game_img(gid, cur)
+            if image:
+                logger.info(f"Game : {game_name} already had an image so it was left alone")
+                continue
+            
             print(f"Currently enriching game : {game_name}")
             logger.info(f"Currently enriching game : {game_name}")
             add_game_to_database(game_name[0], IGDBclient, cur)
