@@ -23,24 +23,3 @@ If you have Steam linked, I can also record your Steam playtime when your Steam 
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🏆 **WEEKLY STATS & MVP**
-
-Weekly statistics keep track of things such as:
-
-• Games played
-• Game time
-• Voice activity
-• Streaming
-• Messages
-
-At the end of each week, an MVP is selected based on their activity.
-
-**MVP Points:**
-
-• 6 points / hour of streaming
-• 3 points / hour in voice calls
-• 2 points / hour of gaming
-
-XP uses a similar point system.
-
-━━━━━━━━━━━━━━━━━━━━

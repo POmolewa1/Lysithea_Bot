@@ -208,6 +208,15 @@ def initialize_db():
     logger.info(f"Verified table: game_filter")
     # We also want to manually clear the activity tracking table(s) on start up if needed
 
+    cur.execute(
+        """CREATE TABLE IF NOT EXISTS popular_game_record (
+            id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+            game_name VARCHAR(255),
+            date_added TIMESTAMPTZ
+        );
+        """
+    )
+
     close_connection(conn,cur)
     print("Database has been successfully initialized")
 
@@ -2004,7 +2013,8 @@ def create_mvp_entry(mvp_data, discord_id, uid, guild_id, cur):
         'call_time' : 0,
         'stream_time' : 0,
         'messages' : get_total_weekly_messages(uid, guild_id, cur),
-        'mvp_mult': get_mvp_scaling(uid, guild_id, cur)
+        'mvp_mult': get_mvp_scaling(uid, guild_id, cur),
+        'penalized_game_time' : 0
     }
 
 
@@ -2052,6 +2062,8 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
     for result in results:
         activity_type = result[4]
 
+        penalized_game = get_last_weeks_popular_game()
+
         if activity_type == "PLAYING":
             gid = result[3]
             uid = result[2]
@@ -2069,6 +2081,8 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
                 create_mvp_entry(mvp_data, discord_id, uid, guild_id, cur)
             
             mvp_data[discord_id]['playtime'] += activity_time
+            if game_name == penalized_game:
+                mvp_data[discord_id]['penalized_game_time'] += activity_time
 
         elif activity_type == "IN CALL":
             uid = result[2]
@@ -2102,14 +2116,36 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
     top_time = 0
     game_list = list(server_data['games'].items())
 
+    prev_top_game = get_last_weeks_popular_game()
+    prev_top_game_cur_time = None
 
     for game_name, game_data in game_list:
+        if prev_top_game is not None and game_name == prev_top_game:
+            prev_top_game_cur_time = game_data['total_time']
+            continue
+
         cur_game = game_name
         cur_time = game_data['total_time']
 
         if cur_time > top_time:
             top_game = cur_game
             top_time = cur_time
+
+    if prev_top_game is not None and top_game is None:
+        top_game = prev_top_game
+        top_time = prev_top_game_cur_time
+
+        add_game_to_popular_game_record(top_game)
+
+    elif prev_top_game is not None and top_game is not None:
+        if prev_top_game_cur_time >= top_time:
+            add_game_to_popular_game_record(prev_top_game)
+        else:
+            add_game_to_popular_game_record(top_game)
+
+    elif top_game is not None:
+
+        add_game_to_popular_game_record(top_game)
 
     if top_game is not None:
         server_data['top_game']['name'] = top_game
@@ -2831,6 +2867,56 @@ def add_all_daily_users_from_server_log(USER_WAS_ACTIVE):
         for result in results:
             if result[0] not in USER_WAS_ACTIVE:
                 USER_WAS_ACTIVE.append(result[0])
+    finally:
+        close_connection(conn,cur)
+
+
+def clear_last_weeks_popular_game():
+    conn,cur = create_connection()
+    cutoff = dt.datetime.now(timezone.utc) - dt.timedelta(days = 1)
+    try:
+        cur.execute(
+            """DELETE FROM popular_game_record
+                WHERE date_added < %s 
+            """,(cutoff,)
+        )
+    finally:
+        close_connection(conn,cur)
+
+
+def get_last_weeks_popular_game():
+    conn, cur = create_connection_with_rety()
+    # We add a one day buffer so we don't select this weeks popular game
+    cutoff = dt.datetime.now(timezone.utc) - dt.timedelta(days = 1)
+
+    try:
+        cur.execute(
+            """SELECT game_name FROM popular_game_record
+                WHERE date_added < %s
+            """,(cutoff,)
+        )
+
+        result = cur.fetchone()
+        if result is None:
+            logger.warning("There was no previous popular game")
+            return
+
+        return result[0]
+    
+    finally:
+        close_connection(conn,cur)
+    
+
+def add_game_to_popular_game_record(game_name):
+    conn,cur = create_connection()
+    today = dt.datetime.now(timezone.utc)
+
+    try:
+        cur.execute(
+            """INSERT INTO popular_game_record (game_name, date_added)
+                VALUES (%s, %s)
+            """,(game_name, today)
+        )
     finally:
         close_connection(conn,cur)
 

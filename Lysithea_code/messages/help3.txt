@@ -1,4 +1,26 @@
+🏆 **WEEKLY STATS & MVP**
 
+Weekly statistics keep track of things such as:
+
+• Games played
+• Game time
+• Voice activity
+• Streaming
+• Messages
+
+At the end of each week, an MVP is selected based on their activity.
+
+**MVP Points:**
+
+• 6 points / hour of streaming
+• 3 points / hour in voice calls
+• 2 points / hour of gaming
+
+(Games that were most popular in the previous week will have a 1/3 point penalty and will be marked with an ❌.)
+
+XP uses a similar point system (does not including any penalties)
+
+━━━━━━━━━━━━━━━━━━━━
 📰 **GAME NEWS**
 
 I'll periodically check the games being played by members of the server and look for relevant game news.
