@@ -867,9 +867,13 @@ class Client(commands.Bot):
 
         # Call was ended
         if before.channel != None and after.channel == None:
+            level = get_user_level(member.id, member.guild.id)
             conn,cur = create_connection()
             end_tracker(member.id, None, a_state1, guild_id, cur)
             close_connection(conn,cur)
+            new_level = get_user_level(member.id, member.guild.id)
+            if level != new_level:
+                await level_up_message(level, new_level, member.id, member.guild)
 
         # Stream was started
         if before.self_stream == False and after.self_stream == True:
@@ -879,10 +883,13 @@ class Client(commands.Bot):
 
         # Stream ended
         if before.self_stream == True and after.self_stream == False:
+            level = get_user_level(member.id, member.guild.id)
             conn,cur = create_connection()
             end_tracker(member.id, None, a_state2, guild_id, cur)
             close_connection(conn,cur)
-
+            new_level = get_user_level(member.id, member.guild.id)
+            if level != new_level:
+                await level_up_message(level, new_level, member.id, member.guild)
         #print(member.display_name)
         #print(type(before))
         #print(before)
