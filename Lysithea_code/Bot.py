@@ -733,9 +733,13 @@ class Client(commands.Bot):
             await level_up_message(level, new_level, message.author.id, message.guild)
 
         # For testing
+        # if message.content.startswith("e"):
+        #     await weekly_game_library_enrichment()
         # if message.content.startswith("m"):
         #     await mvp_process(message.guild)
-
+        # if message.content.startswith("ed"):
+        #      await end_of_day_processes() 
+        
         # if message.content.startswith("h"):
         #     channel = self.get_channel(1552002381439443114)
         #     if channel is None:
