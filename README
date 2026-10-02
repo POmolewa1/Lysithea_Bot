@@ -165,7 +165,8 @@ DEV_ID = (This could be your steam account. If you don't have one use any nubers
 DEV_DISCORD = (This could be your discord id. If you don't have one use any nubers)
 ```
 
-Install the required Python packages and start the bot:
+How to get Steam credentials : https://steamcommunity.com/dev
+How to get IGDB credentials : https://api-docs.igdb.com/#getting-started
 
 ---
 
@@ -187,7 +188,6 @@ Most activity tracking happens automatically in the background, so users don't n
 Lysithea started as a relatively small Discord bot for a private gaming server and gradually grew into a larger project involving:
 
 * Asynchronous programming
-* REST APIs
 * Database design
 * Event-driven programming
 * Background task scheduling
@@ -204,3 +204,19 @@ The project was built both as a useful bot for a small community and as an oppor
 ## 👤 Author
 
 Built by **Pius Omolewa** as a personal project.
+
+---
+## 📷 Media
+
+![Server Profile](Assets/profile1.png)
+![Server Profile2](Assets/profile2.png)
+
+![guild1](Assets/guildcard1.png)
+![guild2](Assets/guildcard2.png)
+
+![mvp1](Assets/mvp1.png)
+![mvp2](Assets/mvp2.png)
+![mvp3](Assets/mvp3.png)
+![mvp4](Assets/mvp4.png)
+
+![holiday](Assets/holiday.png)

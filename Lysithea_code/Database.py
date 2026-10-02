@@ -2130,7 +2130,7 @@ def adjust_mvp_mult(discord_id, guild_id, reset : bool, cur : db.extensions.curs
     if reset:
         cur.execute(
             """UPDATE guilds_users
-                SET mvp_mult = 70
+                SET mvp_mult = 55
                 WHERE user_id = %s
                 AND guild_id = %s
             """,(uid, guild_id)
@@ -2163,6 +2163,7 @@ def update_user_mvp_data(discord_id, guild_id, placement, cur : db.extensions.cu
             add_user_xp(discord_id, guild_id, 2500, cur)
             adjust_mvp_mult(discord_id, guild_id, False, cur)
         case _:
+            adjust_mvp_mult(discord_id, guild_id, False, cur)
             return
         
     cur.execute(

@@ -554,8 +554,8 @@ def create_string_from_list_for_messages(item_list, guild):
         return " "
     string = (
         "```text\n"
-        f"{'Name' : <20} | {'Messages' : >6}\n"
-        "---------------------------------\n"
+        f"{'Name' : <30} | {'Messages' : >6}\n"
+        "--------------------------------------------\n"
     )
 
     total_messages = 0
@@ -564,10 +564,10 @@ def create_string_from_list_for_messages(item_list, guild):
         messages = data
         total_messages += messages
         
-        string += f"{discord_name:<20} | {messages:>6}\n"
+        string += f"{discord_name:<30} | {messages:>6}\n"
         
     string += (
-        f"\n{'total:' : <22} {total_messages : >6}\n"
+        f"\n{'total:' : <32} {total_messages : >6}\n"
         "```"
     )
 
@@ -578,8 +578,8 @@ def create_string_from_list(item_list, guild):
         return " "
     string = (
         "```text\n"
-        f"{'Name' : <20} | {'Time' : >6}\n"
-        "---------------------------------\n"
+        f"{'Name' : <30} | {'Time' : >6}\n"
+        "--------------------------------------------\n"
     )
 
     total_time = 0
@@ -589,11 +589,11 @@ def create_string_from_list(item_list, guild):
         total_time += time_played
         
         time_played = format_timedelta(dt.timedelta(seconds = time_played))
-        string += f"{discord_name:<20} | {time_played:>6}\n"
+        string += f"{discord_name:<30} | {time_played:>6}\n"
         
     total_time = format_timedelta(dt.timedelta(seconds = total_time))
     string += (
-        f"\n{'total:' : <22} {total_time : >6}\n"
+        f"\n{'total:' : <32} {total_time : >6}\n"
         "```"
     )
 
@@ -605,8 +605,8 @@ def create_string(single_game_data, t_time, guild : discord.Guild):
         return " "
     string = (
         "```text\n"
-        f"{'Name' : <20} | {'Time' : >6}\n"
-        "---------------------------------\n"
+        f"{'Name' : <30} | {'Time' : >6}\n"
+        "--------------------------------------------\n"
     )
 
     #total_time = 0
@@ -621,11 +621,11 @@ def create_string(single_game_data, t_time, guild : discord.Guild):
         time_played = ply_time
         
         time_played = format_timedelta(dt.timedelta(seconds = time_played))
-        string += f"{discord_name:<20} | {time_played:>6}\n"
+        string += f"{discord_name:<30} | {time_played:>6}\n"
         
     total_time = format_timedelta(dt.timedelta(seconds = t_time))
     string += (
-        f"\n{'total:' : <22} {total_time : >6}\n"
+        f"\n{'total:' : <32} {total_time : >6}\n"
         "```"
     )
 
@@ -1048,8 +1048,12 @@ def create_mvp_breakdown_message(leaderboard, user_score_breakdown, guild : disc
             "────────────────────────────────────────\n\n"
         )
 
-   
+    count = 0
     for i, (user, _) in enumerate(leaderboard):
+        if count >= 15:
+            break
+        count += 1
+
         match i:
             case 0:
                 string += f"{"🥇":<3} {guild.get_member(user).display_name : <20}\n{user_score_breakdown[user]}\n\n"
@@ -1100,11 +1104,6 @@ async def mvp_process(guild : discord.Guild):
             reverse = True
         )
 
-        placements = len(contestants)
-        if placements >= 4:
-            placements = 3
-
-        
         mvp_role = await verify_MVP_role(guild)
         last_mvp = get_prev_mvp(guild, mvp_role)
         if last_mvp is not None:
@@ -1113,7 +1112,7 @@ async def mvp_process(guild : discord.Guild):
         mvp_winner = guild.get_member(contestants[0][0])
         await mvp_winner.add_roles(mvp_role)
 
-        for place in range(placements): 
+        for place in range(len(contestants)): 
             update_user_mvp_data(contestants[place][0], guild.id, place, cur)
     finally:
         close_connection(conn, cur)
