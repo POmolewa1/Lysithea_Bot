@@ -2020,11 +2020,11 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
     if not results:
         logger.warning(f"Could not find data for guild id : {guild_id}")
         return None, None
-    
+
+    penalized_game = get_last_weeks_popular_game()
+
     for result in results:
         activity_type = result[4]
-
-        penalized_game = get_last_weeks_popular_game()
 
         if activity_type == "PLAYING":
             gid = result[3]
@@ -2078,7 +2078,7 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
     top_time = 0
     game_list = list(server_data['games'].items())
 
-    prev_top_game = get_last_weeks_popular_game()
+    prev_top_game = penalized_game
     prev_top_game_cur_time = None
 
     for game_name, game_data in game_list:

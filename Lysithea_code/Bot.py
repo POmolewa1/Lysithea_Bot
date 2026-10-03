@@ -1117,7 +1117,18 @@ async def mvp_process(guild : discord.Guild):
         await mvp_winner.add_roles(mvp_role)
 
         for place in range(len(contestants)): 
-            update_user_mvp_data(contestants[place][0], guild.id, place, cur)
+            if place < 3:
+                level = get_user_level(contestants[place][0], guild.id)
+
+                update_user_mvp_data(contestants[place][0], guild.id, place, cur)
+                conn.commit()
+
+                new_level = get_user_level(contestants[place][0], guild.id)
+
+                if level != new_level:
+                    asyncio.create_task(level_up_message(level, new_level, contestants[place][0], guild))
+            else:
+                update_user_mvp_data(contestants[place][0], guild.id, place, cur)
     finally:
         close_connection(conn, cur)
 
