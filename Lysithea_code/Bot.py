@@ -723,9 +723,8 @@ class Client(commands.Bot):
             #await message.channel.send(f"Hi there {message.author.display_name}", embeds = [self.e,self.e,self.e,self.e])
             #await message.channel.send(f"Hi there {message.author.display_avatar.url}")
             # print(message.author.guild.id)
-
+        conn, cur = await asyncio.to_thread(create_connection_with_rety)
         level = get_user_level(message.author.id, message.guild.id)
-        conn,cur = create_connection()
         update_user_message_count(message.author.id, message.guild.id, cur)
         close_connection(conn,cur)
         new_level = get_user_level(message.author.id, message.guild.id)
