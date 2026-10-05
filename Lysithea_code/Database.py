@@ -644,8 +644,8 @@ def end_game_tracker(member_id, game_name, activity_type, guild_id, cur : db.ext
     time_played = (today - start_time).total_seconds()
     if time_played < 0:
         time_played = 0
-    if time_played > 43200:
-        time_played = 43200
+    if time_played > 21600:
+        time_played = 21600
     # Make sure to add a tracking limit here maybe 12 hours?
     total_time = time_in_game + time_played
 
@@ -677,6 +677,9 @@ def end_voice_tracker(member_id, activity_type, guild_id, cur : db.extensions.cu
     time_tracked = (today - start_time).total_seconds()
     if time_tracked < 0:
         time_tracked = 0
+
+    if time_tracked > 21600:
+        time_tracked = 21600
     # Total time for streaming and call will be in guilds_users
 
     if activity_type == "IN CALL":
