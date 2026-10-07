@@ -1994,7 +1994,7 @@ async def end_of_day_processes():
 
     await asyncio.to_thread(daily_cleanup)
 
-    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 4:
+    if dt.datetime.now(ZoneInfo("America/Los_Angeles")).weekday() == 5:
         for guild in client.guilds:
 
             logger.info(f"Starting mvp process for guild : {guild.id}")

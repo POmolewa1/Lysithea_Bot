@@ -1489,7 +1489,7 @@ def link_steam_library(library_data : dict, steam_profile_data : dict, member_id
                     cur.execute(
                         """UPDATE user_games
                             SET 
-                                last_time_played = %s,
+                                last_time_played = GREATEST(last_time_played, %s),
                                 server_hours = server_hours + %s
                             WHERE user_id = %s
                             AND game_id = %s
