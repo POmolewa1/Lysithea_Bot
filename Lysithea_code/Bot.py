@@ -1518,7 +1518,7 @@ def create_flare():
             message = "You remind me a little of myself during my time at the Officers Academy 🎓"
 
         case 6:
-            message = "Your achienvemnt shines just as bright as any Crest. Well... perhaps not as bright as mine 🤭"
+            message = "Your achievement shines just as bright as any Crest. Well... perhaps not as bright as mine 🤭"
 
         case 7:
             message = "Not bad. That should mean a lot coming from such an esteemed member of House Ordelia. 😌"
