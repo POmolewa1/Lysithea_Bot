@@ -235,7 +235,7 @@ class GuildCard(discord.Embed):
         if level < 21:
             self.description = (
                 f"### Level {level} - {RANK_TITLES[rank]} \n"
-                f"### XP : {int((profile_data[4] - LEVEL_THRESHOLDS[level - 1]) / 100)} / {int(LEVEL_THRESHOLDS[level] / 100)}\n\n"
+                f"### XP : {int((profile_data[4] - LEVEL_THRESHOLDS[level - 1]) / 100)} / {int((LEVEL_THRESHOLDS[level] - LEVEL_THRESHOLDS[level - 1]) / 100)}\n\n"
             )
         else:
             self.description = (

@@ -100,6 +100,7 @@ def initialize_db():
 
         total_messages_sent INT DEFAULT 0,
         messages_sent_this_week INT DEFAULT 0,
+        xp_earned_this_week INT DEFAULT 0,
         total_stream_time INT DEFAULT 0,
         total_call_time INT DEFAULT 0,
 
@@ -2103,7 +2104,7 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
         add_game_to_popular_game_record(top_game)
 
     elif prev_top_game is not None and top_game is not None:
-        if prev_top_game_cur_time >= top_time:
+        if prev_top_game_cur_time and prev_top_game_cur_time >= top_time:
             add_game_to_popular_game_record(prev_top_game)
         else:
             add_game_to_popular_game_record(top_game)
@@ -2125,6 +2126,7 @@ def get_week_long_server_data(guild, cur : db.extensions.cursor):
 
     return(server_data, mvp_data)
 
+
 def adjust_mvp_mult(discord_id, guild_id, reset : bool, cur : db.extensions.cursor):
     uid = get_user_id(discord_id, cur)
     if uid is None:
@@ -2139,13 +2141,28 @@ def adjust_mvp_mult(discord_id, guild_id, reset : bool, cur : db.extensions.curs
             """,(uid, guild_id)
         )
     else:
-        cur.execute(
-            """UPDATE guilds_users
-                SET mvp_mult = LEAST(mvp_mult + 15, 160)
-                WHERE user_id = %s
-                AND guild_id = %s
-            """,(uid, guild_id)
-        )
+        user_level = get_user_lvl(guild_id, uid, cur)
+        highest_level = get_highest_guild_level(guild_id, cur)
+        if user_level is None or highest_level is None:
+            logger.error(f"Could not determine levels for uid {uid} in guild {guild_id}")
+            return
+        if user_level >= highest_level:
+            cur.execute(
+                """UPDATE guilds_users
+                    SET mvp_mult = LEAST(mvp_mult + 15, 100)
+                    WHERE user_id = %s
+                    AND guild_id = %s
+                """,(uid, guild_id)
+            )
+        else:
+            cur.execute(
+                """UPDATE guilds_users
+                    SET mvp_mult = LEAST(mvp_mult + 15, 160)
+                    WHERE user_id = %s
+                    AND guild_id = %s
+                """,(uid, guild_id)
+            )
+
 
 def update_user_mvp_data(discord_id, guild_id, placement, cur : db.extensions.cursor):
     uid = get_user_id(discord_id, cur)
@@ -2179,6 +2196,72 @@ def update_user_mvp_data(discord_id, guild_id, placement, cur : db.extensions.cu
         (uid, guild_id)
     )
 
+
+def update_this_week_xp(guild_id, uid, xp, cur : db.extensions.cursor):
+        cur.execute(
+            """UPDATE guilds_users
+                SET xp_earned_this_week = xp_earned_this_week + %s
+                WHERE user_id = %s
+                AND guild_id = %s
+            """,(xp, uid, guild_id)
+        )
+
+
+def update_guilds_users_xp(guild_id, uid, xp, cur : db.extensions.cursor):
+    cur.execute(
+        """UPDATE guilds_users
+            SET xp = xp + %s
+            WHERE user_id = %s
+            AND guild_id = %s
+        """,(xp, uid, guild_id)
+    )
+
+
+WEEKLY_XP_LIMIT = 12000
+def calculate_limited_and_unlimited_xp(guild_id, uid, add_value, cur : db.extensions.cursor):
+    # if the user has the highest level no xp is gained passed cap
+    # if user is within 1 level of the highest then extra xp after the cap is halved 
+    # if the user is within 2 levels of the hightst then extra xp is 2/3
+
+    user_level = get_user_lvl(guild_id, uid, cur)
+    highest_level = get_highest_guild_level(guild_id, cur)
+    if user_level is None or highest_level is None:
+        logger.error(f"Could not determine levels for uid {uid} in guild {guild_id}")
+        return 0,0
+
+    unlimited_xp = 0
+    limited_xp = 0
+
+    if user_level <= highest_level - 3:
+        unlimited_xp = add_value
+    else:
+        xp_this_week = get_xp_this_week(guild_id, uid, cur)
+        if xp_this_week is None:
+            return unlimited_xp, limited_xp
+        
+        allowed_unlimited_xp = WEEKLY_XP_LIMIT - xp_this_week
+        if allowed_unlimited_xp < 0:
+            allowed_unlimited_xp = 0
+
+        if add_value <= allowed_unlimited_xp:
+            unlimited_xp = add_value
+        else:
+            unlimited_xp = allowed_unlimited_xp
+            limited_xp = add_value - allowed_unlimited_xp
+
+        if limited_xp > 0:
+            if user_level >= highest_level:
+                limited_xp = limited_xp * 0
+
+            elif user_level == highest_level - 1:
+                limited_xp = int(limited_xp * 1/2)
+
+            elif user_level == highest_level - 2:
+                limited_xp = int(limited_xp * 2/3)
+
+    return unlimited_xp, limited_xp
+
+
 def add_user_xp(member_id, guild_id, add_value, cur : db.extensions.cursor):
 
     uid = get_user_id(member_id, cur)
@@ -2186,22 +2269,28 @@ def add_user_xp(member_id, guild_id, add_value, cur : db.extensions.cursor):
         return
     
     if guild_id is not None:
-        logger.info(f"Adding {add_value} xp to uid : {uid} in guild : {guild_id}")
-        cur.execute(
-            """UPDATE guilds_users
-                SET xp = xp + %s
-                WHERE user_id = %s
-                AND guild_id = %s
-            """,(add_value, uid, guild_id)
-        )
+        unlimited_xp, limited_xp = calculate_limited_and_unlimited_xp(guild_id, uid, add_value, cur)
+
+        if unlimited_xp > 0:
+            logger.info(f"Adding {unlimited_xp} (unlimited) xp to uid : {uid} in guild : {guild_id}")
+            update_guilds_users_xp(guild_id, uid, unlimited_xp, cur)
+
+        if limited_xp > 0:
+            logger.info(f"Adding {limited_xp} (limited) xp to uid : {uid} in guild : {guild_id}")
+            update_guilds_users_xp(guild_id, uid, limited_xp, cur)
+
+        total_added_xp = unlimited_xp + limited_xp
+        update_this_week_xp(guild_id, uid, total_added_xp, cur)
+
     else:
-        logger.warning(f"Adding {add_value} xp to uid : {uid} in ALL guilds")
-        cur.execute(
-            """UPDATE guilds_users
-                SET xp = xp + %s
-                WHERE user_id = %s
-            """,(add_value, uid)
-        )
+        all_user_guilds = get_all_user_guilds(uid, cur)
+        if not all_user_guilds:
+            return
+        
+        for guild in all_user_guilds:
+            g_id = guild[0]
+            add_user_xp(member_id, g_id, add_value, cur)
+
 
 def update_user_message_count(member_id, guild_id, cur : db.extensions.cursor):
     
@@ -2247,7 +2336,6 @@ def update_mvp_role_id(role_id, guild_id, cur : db.extensions.cursor):
 # conn,cur = create_connection()
 # get_week_long_server_data(1534754711536799864, cur)
 # close_connection(conn,cur)  
-
 
 def get_all_user_games(on_steam : bool, cur : db.extensions.cursor):
     if on_steam:
@@ -2529,7 +2617,9 @@ def weekly_cleanup():
 
         cur.execute(
             """UPDATE guilds_users
-                SET messages_sent_this_week = 0
+                SET 
+                    messages_sent_this_week = 0,
+                    xp_earned_this_week = 0
             """
         )
     finally:
@@ -2894,6 +2984,70 @@ def add_game_to_popular_game_record(game_name):
         )
     finally:
         close_connection(conn,cur)
+
+def get_xp_this_week(guild_id, uid, cur : db.extensions.cursor):
+    cur.execute(
+        """SELECT xp_earned_this_week FROM guilds_users
+            WHERE user_id = %s
+            AND guild_id = %s
+        """,(uid,guild_id)
+    )
+
+    result = cur.fetchone()
+
+    if result is None:
+        logger.error(f"Could not find a value for xp earend this week from uid : {uid}")
+        return
+
+    return result[0]
+
+def get_user_lvl(guild_id, uid, cur : db.extensions.cursor):
+    cur.execute(
+        """SELECT guild_level FROM guilds_users
+            WHERE user_id = %s
+            AND guild_id = %s
+        """,(uid,guild_id)
+    )
+
+    result = cur.fetchone()
+
+    if result is None:
+        logger.error(f"Could not find a value for user level from uid : {uid}")
+        return
+
+    return result[0]
+
+
+def get_highest_guild_level(guild_id, cur : db.extensions.cursor):
+    cur.execute(
+        """SELECT guild_level FROM guilds_users
+            WHERE guild_id = %s
+            ORDER BY guild_level DESC
+            LIMIT 1
+        """,(guild_id,)
+    )
+
+    result = cur.fetchone()
+    if result is None:
+        logger.error(f"Could not find highest user level in guild : {guild_id}")
+        return
+
+    return result[0]
+
+def get_all_user_guilds(uid, cur : db.extensions.cursor):
+    cur.execute(
+        """SELECT guild_id FROM guilds_users
+            WHERE user_id = %s
+        """,(uid,)
+    )
+
+    results = cur.fetchall()
+
+    if not results:
+        logger.error(f"Could not find guilds for user : {uid}")
+        return
+
+    return results
 
 if __name__ == "__main__":
     # resetdb()
