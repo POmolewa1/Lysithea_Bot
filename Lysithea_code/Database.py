@@ -2217,7 +2217,7 @@ def update_guilds_users_xp(guild_id, uid, xp, cur : db.extensions.cursor):
     )
 
 
-WEEKLY_XP_LIMIT = 12000
+WEEKLY_XP_LIMIT = 20000
 def calculate_limited_and_unlimited_xp(guild_id, uid, add_value, cur : db.extensions.cursor):
     # if the user has the highest level no xp is gained passed cap
     # if user is within 1 level of the highest then extra xp after the cap is halved 
@@ -2251,7 +2251,7 @@ def calculate_limited_and_unlimited_xp(guild_id, uid, add_value, cur : db.extens
 
         if limited_xp > 0:
             if user_level >= highest_level:
-                limited_xp = limited_xp * 0
+                limited_xp = limited_xp * 1/8
 
             elif user_level == highest_level - 1:
                 limited_xp = int(limited_xp * 1/2)
